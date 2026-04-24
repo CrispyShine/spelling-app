@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Practice App</title>
+    <style>
+        /* Kid-Friendly Bright Colors & Layout */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f8ff; /* Light Blue */
+            color: #333;
+        }
+        .container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+        }
+        h1 {
+            color: #ff6347; /* Tomato Red */
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        #word-container {
+            margin: 30px 0;
+            min-height: 100px;
+        }
+        #word-input {
+            padding: 15px;
+            font-size: 1.5em;
+            width: 80%;
+            border: 3px solid #6a5acd; /* Slate Blue */
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        button {
+            padding: 12px 25px;
+            font-size: 1.2em;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            margin: 5px;
+            transition: background-color 0.2s;
+        }
+        #speak-btn, #check-btn {
+            background-color: #3cb371; /* Medium Sea Green */
+            color: white;
+        }
+        #speak-btn:hover, #check-btn:hover {
+            background-color: #2e8b57;
+        }
+        #next-btn {
+            background-color: #ffa500; /* Orange */
+            color: white;
+            display: none;
+        }
+        #next-btn:hover {
+            background-color: #cc8400;
+        }
+        #feedback {
+            font-size: 1.4em;
+            margin-top: 20px;
+            font-weight: bold;
+            min-height: 40px;
+        }
+        .correct { color: #3cb371; }
+        .incorrect { color: #ff6347; }
+        #score-display {
+            font-size: 1.5em;
+            color: #6a5acd;
+            margin-top: 15px;
+        }
+        #week-selector {
+            margin-bottom: 20px;
+            padding: 10px;
+            font-size: 1em;
+            border: 2px solid #6a5acd;
+            border-radius: 5px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Spelling Practice</h1>
+    <p>Select Week:
+        <select id="week-selector">
+            <option value="latest">Current Week</option>
+            <option value="1">Week 1</option>
+            <option value="2">Week 2</option>
+            <option value="3">Week 3</option>
+            <option value="4">Week 4</option>
+            <option value="5">Week 5</option>
+            </select>
+        <button onclick="startSession()">Start Practice</button>
+    </p>
+
+    <div id="word-container" style="display:none;">
+        <p id="word-counter">Word 1 of 12</p>
+        <div class="controls">
+            <button id="speak-btn">🔊 Hear Word</button>
+        </div>
+        <input type="text" id="word-input" autocorrect="off" 
+  spellcheck="false" placeholder="Type the word here Tess..." disabled>
+        <div class="controls">
+            <button id="check-btn">✅ Check</button>
+            <button id="next-btn">➡️ Next</button>
+        </div>
+    </div>
+
+    <div id="feedback"></div>
+    <div id="score-display">Score: 0 / 0</div>
+</div>
+
+<script>
+    
+    const WEBHOOK_GET_WORDS = 'https://hook.eu2.make.com/el6ri22zr8f7vldc58a8oradbsspkacb';
+    
+
+    let words = [];
+    let currentWordIndex = 0;
+    let score = 0;
+    const sessionLength = 30;
+    let currentAttempts = 0;
+
+    // Fisher-Yates shuffle algorithm
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function startSession() {
+        const selectedWeek = document.getElementById('week-selector').value;
+        document.getElementById('feedback').innerHTML = "Loading words...";
+        document.getElementById('word-container').style.display = 'none';
+
+        fetchWords(selectedWeek);
+    }
+
+    async function fetchWords(week) {
+        try {
+            const response = await fetch(`${WEBHOOK_GET_WORDS}?week=${week}`);
+            const data = await response.json();
+
+            if (data.words && data.words.length > 0) {
+                words = shuffle(data.words).slice(0, sessionLength);
+                currentWordIndex = 0;
+                score = 0;
+                updateScoreDisplay();
+                document.getElementById('feedback').innerHTML = '';
+                document.getElementById('word-container').style.display = 'block';
+                loadWord();
+            } else {
+                document.getElementById('feedback').innerHTML = "❌ No words found for this week. Check your Airtable filter or selected week.";
+                document.getElementById('word-container').style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Error fetching words:', error);
+            document.getElementById('feedback').innerHTML = "❌ Error loading words. Check your webhook URL or Make.com scenario.";
+        }
+    }
+
+    function loadWord() {
+        if (currentWordIndex >= words.length) {
+            endSession();
+            return;
+        }
+
+        const wordData = words[currentWordIndex];
+
+        // Reset attempts for the new word
+    currentAttempts = 0;
+        
+        document.getElementById('word-counter').textContent = `Word ${currentWordIndex + 1} of ${sessionLength}`;
+        document.getElementById('word-input').value = '';
+        document.getElementById('word-input').disabled = false;
+        document.getElementById('word-input').focus();
+
+        document.getElementById('feedback').textContent = "Listen carefully.";
+        document.getElementById('feedback').className = '';
+        
+        document.getElementById('check-btn').style.display = 'inline-block';
+        document.getElementById('next-btn').style.display = 'none';
+
+        // Automatically speak the word when loaded
+        speakWord(wordData.audioUrl);
+    }
+
+    document.getElementById('speak-btn').addEventListener('click', () => {
+        if (words.length > 0) {
+            speakWord(words[currentWordIndex].audioUrl);
+        }
+    });
+
+    document.getElementById('check-btn').addEventListener('click', checkSpelling);
+    document.getElementById('next-btn').addEventListener('click', () => {
+        currentWordIndex++;
+        loadWord();
+    });
+
+    document.getElementById('word-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            if (document.getElementById('check-btn').style.display !== 'none') {
+                checkSpelling();
+            } else if (document.getElementById('next-btn').style.display !== 'none') {
+                currentWordIndex++;
+                loadWord();
+            }
+        }
+    });
+
+    function speakWord(audioUrl) {
+        if (audioUrl) {
+            const audio = new Audio(audioUrl);
+            audio.play().catch(e => console.error("Audio playback failed:", e));
+        } else {
+             document.getElementById('feedback').textContent = "No audio file available.";
+        }
+    }
+
+    function checkSpelling() {
+    const typedWord = document.getElementById('word-input').value.trim();
+    const correctWord = words[currentWordIndex].word;
+
+    if (!typedWord) {
+        document.getElementById('feedback').textContent = "Please type a word!";
+        return;
+    }
+
+    const isCorrect = typedWord.toLowerCase() === correctWord.toLowerCase();
+    
+    if (isCorrect) {
+        // --- CORRECT: FINAL SUCCESS ---
+        score++;
+        document.getElementById('feedback').textContent = "✅ Correct!";
+        document.getElementById('feedback').className = 'correct';
+        
+        // Disable input and show Next button
+        document.getElementById('word-input').disabled = true;
+        document.getElementById('check-btn').style.display = 'none';
+        document.getElementById('next-btn').style.display = 'inline-block';
+        
+        // Log the successful attempt
+        logAttempt(typedWord, true, correctWord);
+        
+    } else {
+        // --- INCORRECT: Handle attempts ---
+        currentAttempts++;
+        document.getElementById('feedback').className = 'incorrect';
+
+        if (currentAttempts === 1) {
+            // First failure: Allow one more try
+            document.getElementById('feedback').textContent = "❌ Incorrect. Try again!";
+            document.getElementById('word-input').value = ''; // Clear input for fresh try
+            document.getElementById('word-input').focus();
+            
+        } else {
+            // Second failure: Show correct answer and move on
+            const errors = getLevenshteinDistance(typedWord, correctWord);
+            document.getElementById('feedback').innerHTML = `❌ Incorrect! The word was **${correctWord}** (off by ${errors} letters).`;
+            
+            // Disable input and show Next button
+            document.getElementById('word-input').disabled = true;
+            document.getElementById('check-btn').style.display = 'none';
+            document.getElementById('next-btn').style.display = 'inline-block';
+
+            // Log the failed attempt
+            logAttempt(typedWord, false, correctWord);
+        }
+    }
+
+    updateScoreDisplay();
+}
+
+    function updateScoreDisplay() {
+        document.getElementById('score-display').textContent = `Score: ${score} / ${currentWordIndex + 1}`;
+    }
+
+    function endSession() {
+        const finalScore = score;
+        const totalWords = words.length;
+        document.getElementById('feedback').innerHTML = `🎉 **Session Complete!** You scored ${finalScore} out of ${totalWords}!`;
+        document.getElementById('word-container').style.display = 'none';
+        document.getElementById('score-display').textContent = '';
+    }
+
+    // Levenshtein Distance (simple error counting for feedback)
+    function getLevenshteinDistance(a, b) {
+      if (a.length === 0) return b.length;
+      if (b.length === 0) return a.length;
+      let matrix = [];
+      for (let i = 0; i <= b.length; i++) { matrix[i] = [i]; }
+      for (let j = 0; j <= a.length; j++) { matrix[0][j] = j; }
+      for (let i = 1; i <= b.length; i++) {
+        for (let j = 1; j <= a.length; j++) {
+          if (b.charAt(i-1) === a.charAt(j-1)) {
+            matrix[i][j] = matrix[i-1][j-1];
+          } else {
+            matrix[i][j] = Math.min(matrix[i-1][j-1] + 1, // substitution
+                                    Math.min(matrix[i][j-1] + 1, // insertion
+                                             matrix[i-1][j] + 1)); // deletion
+          }
+        }
+      }
+      return matrix[b.length][a.length];
+    };
+
+    // This is where we would log the attempt to your Airtable base using the Airtable API,
+    // which requires a second Make scenario or direct API calls.
+    // For now, we will just log to the console.
+    function logAttempt(typedAnswer, isCorrect, correctWord) {
+        console.log(`Attempt logged: Typed=${typedAnswer}, Correct=${isCorrect}, WordID=${words[currentWordIndex].recordId}`);
+        // To complete the logging, you would need a second Make webhook
+        // that receives this data and creates a record in your 'Attempts' table.
+    }
+</script>
+
+</body>
+</html>
