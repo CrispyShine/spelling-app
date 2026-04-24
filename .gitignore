@@ -1,3 +1,17 @@
+# Environment variables
+.env
+
+# API Keys and Credentials
+*-credentials.json
+*-config-private.*
+
+# Personal copies with real API keys
+spelling-app-personal.html
+
+# OS files
+.DS_Store
+Thumbs.db
+
 # Logs
 logs
 *.log
