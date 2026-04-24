@@ -371,6 +371,6 @@ Show final score
 ---
 
 ## Version History
-- Initial build: [DATE]
-- Documentation created: [TODAY'S DATE]
-- Last updated: [TODAY'S DATE]
+- Initial build: [11-2025]
+- Documentation created: [24-04-2026]
+- Last updated: [24-04-2026]
