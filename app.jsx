@@ -101,25 +101,29 @@ function App() {
   const [errorMsg, setErrorMsg] = useAppState(null);
 
   const availableWeeks = useAppMemo(() => Object.keys(mockBank).map(Number).sort((a,b)=>a-b), [mockBank]);
+  const weekWordCounts = useAppMemo(() => {
+    const counts = {};
+    Object.keys(mockBank).forEach(k => { counts[k] = mockBank[k].length; });
+    return counts;
+  }, [mockBank]);
 
   async function startSession(week) {
     setErrorMsg(null);
     setScreen("loading");
     let pool = [];
+    const resolvedWeek = week === "latest" ? String(Math.max(...availableWeeks)) : String(week);
 
     if (tweaks.dataSource === "live") {
       try {
-        const r = await fetch(`${LIVE_WEBHOOK}?week=${week}`);
+        const r = await fetch(`${LIVE_WEBHOOK}?week=${resolvedWeek}`);
         const data = await r.json();
         pool = data.words || [];
       } catch (e) {
         setErrorMsg("Couldn't reach the word list — using sample words.");
-        const wk = week === "latest" ? String(Math.max(...availableWeeks)) : String(week);
-        pool = mockBank[wk] || mockBank["1"] || [];
+        pool = mockBank[resolvedWeek] || mockBank["1"] || [];
       }
     } else {
-      const wk = week === "latest" ? String(Math.max(...availableWeeks)) : String(week);
-      pool = mockBank[wk] || mockBank["1"] || [];
+      pool = mockBank[resolvedWeek] || mockBank["1"] || [];
     }
 
     if (!pool.length) {
@@ -212,6 +216,7 @@ function App() {
           onSetName={(v) => setTweak("childName", v)}
           weeks={availableWeeks}
           session={tweaks.sessionLength}
+          wordCounts={weekWordCounts}
           onStart={startSession}
         />
       )}

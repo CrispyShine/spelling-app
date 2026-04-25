@@ -97,7 +97,7 @@ const Star = ({ filled, size = 28, delay = 0 }) => (
 
 // ---- Start screen ----
 
-const StartScreen = ({ childName, onSetName, onStart, weeks, session }) => {
+const StartScreen = ({ childName, onSetName, onStart, weeks, session, wordCounts = {} }) => {
   const [selectedWeek, setSelectedWeek] = useState("latest");
   const [nameInput, setNameInput] = useState("");
   const greeting = useMemo(() => {
@@ -106,6 +106,12 @@ const StartScreen = ({ childName, onSetName, onStart, weeks, session }) => {
     if (h < 18) return "Good afternoon";
     return "Good evening";
   }, []);
+
+  const displayCount = useMemo(() => {
+    const key = selectedWeek === "latest" ? String(Math.max(...weeks, 0)) : selectedWeek;
+    const poolSize = wordCounts[key] || session;
+    return Math.min(session, poolSize);
+  }, [selectedWeek, weeks, wordCounts, session]);
 
   if (!childName) {
     return (
@@ -225,7 +231,7 @@ const StartScreen = ({ childName, onSetName, onStart, weeks, session }) => {
           </div>
 
           <ChunkyButton onClick={() => onStart(selectedWeek)} icon="▶">
-            Start practice · {session} words
+            Start practice · {displayCount} words
           </ChunkyButton>
         </div>
 
