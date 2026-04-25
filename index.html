@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Spelling Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800;9..144,900&family=Nunito:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<style>
+  :root {
+    --bg: oklch(0.97 0.02 75);
+    --bg-2: oklch(0.99 0.01 75);
+    --ink: oklch(0.25 0.02 260);
+    --ink-soft: oklch(0.45 0.02 260);
+    --ink-faint: oklch(0.70 0.02 260);
+    --line: oklch(0.90 0.02 75);
+    --line-strong: oklch(0.82 0.02 75);
+
+    --coral: oklch(0.70 0.18 35);
+    --coral-ink: oklch(0.40 0.15 35);
+    --coral-soft: oklch(0.93 0.05 35);
+
+    --mint: oklch(0.78 0.13 160);
+    --mint-ink: oklch(0.40 0.12 160);
+    --mint-soft: oklch(0.94 0.05 160);
+
+    --butter: oklch(0.88 0.14 90);
+    --butter-ink: oklch(0.50 0.12 80);
+    --butter-soft: oklch(0.96 0.05 90);
+
+    --sky: oklch(0.82 0.09 230);
+    --sky-ink: oklch(0.40 0.10 230);
+    --sky-soft: oklch(0.95 0.03 230);
+
+    --lavender: oklch(0.80 0.07 300);
+    --lavender-soft: oklch(0.95 0.03 300);
+
+    --radius: 20px;
+    --radius-sm: 12px;
+    --radius-lg: 28px;
+
+    --shadow-sm: 0 1px 0 oklch(0.90 0.02 75), 0 4px 12px oklch(0.70 0.02 75 / 0.15);
+    --shadow-md: 0 2px 0 oklch(0.88 0.02 75), 0 12px 30px oklch(0.70 0.02 75 / 0.20);
+    --shadow-lg: 0 3px 0 oklch(0.85 0.02 75), 0 24px 60px oklch(0.70 0.02 75 / 0.25);
+
+    --font-display: 'Fraunces', ui-serif, Georgia, serif;
+    --font-ui: 'Nunito', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  /* Theme variants driven by data-theme */
+  [data-theme="mint"] {
+    --accent: var(--mint);
+    --accent-ink: var(--mint-ink);
+    --accent-soft: var(--mint-soft);
+  }
+  [data-theme="coral"] {
+    --accent: var(--coral);
+    --accent-ink: var(--coral-ink);
+    --accent-soft: var(--coral-soft);
+  }
+  [data-theme="sky"] {
+    --accent: var(--sky);
+    --accent-ink: var(--sky-ink);
+    --accent-soft: var(--sky-soft);
+  }
+  [data-theme="butter"] {
+    --accent: var(--butter);
+    --accent-ink: var(--butter-ink);
+    --accent-soft: var(--butter-soft);
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: 18px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+  }
+
+  /* Sprinkled background pattern */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 12% 18%, var(--butter-soft) 0, transparent 8%),
+      radial-gradient(circle at 82% 22%, var(--coral-soft) 0, transparent 9%),
+      radial-gradient(circle at 22% 78%, var(--mint-soft) 0, transparent 10%),
+      radial-gradient(circle at 88% 82%, var(--lavender-soft) 0, transparent 9%),
+      radial-gradient(circle at 50% 50%, var(--sky-soft) 0, transparent 7%);
+    opacity: 0.6;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #root { position: relative; z-index: 1; min-height: 100vh; }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+  }
+
+  input {
+    font-family: inherit;
+  }
+
+  /* Bouncy keyframes */
+  @keyframes pop {
+    0% { transform: scale(0.7); opacity: 0; }
+    60% { transform: scale(1.15); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px) rotate(-1deg); }
+    40% { transform: translateX(8px) rotate(1deg); }
+    60% { transform: translateX(-5px) rotate(-0.5deg); }
+    80% { transform: translateX(5px) rotate(0.5deg); }
+  }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(-2deg); }
+    50% { transform: rotate(2deg); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  @keyframes pulseRing {
+    0% { box-shadow: 0 0 0 0 currentColor; opacity: 0.6; }
+    100% { box-shadow: 0 0 0 30px currentColor; opacity: 0; }
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(-10vh) rotate(0); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+  @keyframes slideUp {
+    from { transform: translateY(16px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<!-- Mock words (shown when live webhook disabled) -->
+<script id="mock-words" type="application/json">
+{
+  "1": [
+    {"recordId":"w1_01","word":"because"},
+    {"recordId":"w1_02","word":"friend"},
+    {"recordId":"w1_03","word":"beautiful"},
+    {"recordId":"w1_04","word":"believe"},
+    {"recordId":"w1_05","word":"garden"},
+    {"recordId":"w1_06","word":"journey"},
+    {"recordId":"w1_07","word":"library"},
+    {"recordId":"w1_08","word":"morning"},
+    {"recordId":"w1_09","word":"quiet"},
+    {"recordId":"w1_10","word":"remember"},
+    {"recordId":"w1_11","word":"thought"},
+    {"recordId":"w1_12","word":"whisper"}
+  ],
+  "2": [
+    {"recordId":"w2_01","word":"adventure"},
+    {"recordId":"w2_02","word":"breeze"},
+    {"recordId":"w2_03","word":"courage"},
+    {"recordId":"w2_04","word":"different"},
+    {"recordId":"w2_05","word":"elephant"},
+    {"recordId":"w2_06","word":"feather"},
+    {"recordId":"w2_07","word":"giggle"},
+    {"recordId":"w2_08","word":"honest"},
+    {"recordId":"w2_09","word":"invent"},
+    {"recordId":"w2_10","word":"journey"},
+    {"recordId":"w2_11","word":"kitchen"},
+    {"recordId":"w2_12","word":"laughter"}
+  ],
+  "3": [
+    {"recordId":"w3_01","word":"mountain"},
+    {"recordId":"w3_02","word":"notice"},
+    {"recordId":"w3_03","word":"octopus"},
+    {"recordId":"w3_04","word":"pencil"},
+    {"recordId":"w3_05","word":"question"},
+    {"recordId":"w3_06","word":"rainbow"},
+    {"recordId":"w3_07","word":"sparkle"},
+    {"recordId":"w3_08","word":"treasure"},
+    {"recordId":"w3_09","word":"umbrella"},
+    {"recordId":"w3_10","word":"village"},
+    {"recordId":"w3_11","word":"whistle"},
+    {"recordId":"w3_12","word":"yellow"}
+  ],
+  "4": [
+    {"recordId":"w4_01","word":"chocolate"},
+    {"recordId":"w4_02","word":"dinosaur"},
+    {"recordId":"w4_03","word":"festival"},
+    {"recordId":"w4_04","word":"grateful"},
+    {"recordId":"w4_05","word":"harbour"},
+    {"recordId":"w4_06","word":"imagine"},
+    {"recordId":"w4_07","word":"jumble"},
+    {"recordId":"w4_08","word":"kindness"},
+    {"recordId":"w4_09","word":"lantern"},
+    {"recordId":"w4_10","word":"meadow"},
+    {"recordId":"w4_11","word":"necklace"},
+    {"recordId":"w4_12","word":"ocean"}
+  ],
+  "5": [
+    {"recordId":"w5_01","word":"parachute"},
+    {"recordId":"w5_02","word":"quilt"},
+    {"recordId":"w5_03","word":"raccoon"},
+    {"recordId":"w5_04","word":"squirrel"},
+    {"recordId":"w5_05","word":"telescope"},
+    {"recordId":"w5_06","word":"unicorn"},
+    {"recordId":"w5_07","word":"voyage"},
+    {"recordId":"w5_08","word":"whisker"},
+    {"recordId":"w5_09","word":"xylophone"},
+    {"recordId":"w5_10","word":"yogurt"},
+    {"recordId":"w5_11","word":"zigzag"},
+    {"recordId":"w5_12","word":"butterfly"}
+  ]
+}
+</script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="mascot.jsx"></script>
+<script type="text/babel" src="screens.jsx"></script>
+<script type="text/babel" src="word-finder.jsx"></script>
+<script type="text/babel" src="app.jsx"></script>
+
+</body>
+</html>
