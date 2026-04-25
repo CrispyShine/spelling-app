@@ -235,6 +235,32 @@ const AIRTABLE_BASE_ID = 'YOUR_AIRTABLE_BASE_ID';
    - Updates record with audio file
 5. Within ~30 seconds, audio file appears in the record
 
+### Adding a New Week
+
+When you start a new week in Airtable, the app's week selector buttons need to be updated manually — they are driven by a word list embedded in the app, not fetched live from Airtable.
+
+**Step 1: Add the new week's words to Airtable**
+1. Go to Airtable → Weekly_Words table
+2. Add each word as a new row with the correct Week number (e.g., 4)
+3. Make.com Scenario 1 will automatically generate audio for each word within ~30 seconds
+
+**Step 2: Add the same words to the app's mock bank**
+1. Open `index.html` from the [spelling-app GitHub repo](https://github.com/CrispyShine/spelling-app)
+2. Find the `<script id="mock-words">` block near the bottom of the file
+3. Add a new week entry following the same pattern as existing weeks:
+```json
+"4": [
+  {"recordId":"w4_01","word":"example"},
+  {"recordId":"w4_02","word":"another"},
+  ...
+]
+```
+4. Save the file and push to GitHub — the new week button will appear on the app within ~1 minute
+
+**Note:** The `recordId` values are arbitrary labels (e.g., `w4_01`) — they just need to be unique within the file. The mock bank is used when the app is in Sample mode and to drive the week selector buttons in both modes.
+
+---
+
 ### Running the App
 
 1. Open the HTML file on laptop
@@ -373,4 +399,4 @@ Show final score
 ## Version History
 - Initial build: [11-2025]
 - Documentation created: [24-04-2026]
-- Last updated: [24-04-2026]
+- Last updated: [25-04-2026] — redesigned UI deployed to GitHub Pages; name prompt added; week selector and word count made dynamic; mock bank trimmed to 3 weeks
