@@ -6,7 +6,7 @@ const LIVE_WEBHOOK = 'https://hook.eu2.make.com/el6ri22zr8f7vldc58a8oradbsspkacb
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "theme": "coral",
-  "childName": "Tess",
+  "childName": "",
   "mascotOn": true,
   "soundOn": true,
   "sessionLength": 12,
@@ -209,6 +209,7 @@ function App() {
       {screen === "start" && (
         <StartScreen
           childName={tweaks.childName}
+          onSetName={(v) => setTweak("childName", v)}
           weeks={availableWeeks}
           session={tweaks.sessionLength}
           onStart={startSession}

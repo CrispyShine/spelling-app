@@ -97,14 +97,71 @@ const Star = ({ filled, size = 28, delay = 0 }) => (
 
 // ---- Start screen ----
 
-const StartScreen = ({ childName, onStart, weeks, session }) => {
+const StartScreen = ({ childName, onSetName, onStart, weeks, session }) => {
   const [selectedWeek, setSelectedWeek] = useState("latest");
+  const [nameInput, setNameInput] = useState("");
   const greeting = useMemo(() => {
     const h = new Date().getHours();
     if (h < 12) return "Good morning";
     if (h < 18) return "Good afternoon";
     return "Good evening";
   }, []);
+
+  if (!childName) {
+    return (
+      <div style={{
+        minHeight: "100vh", display: "grid", placeItems: "center",
+        padding: "40px 24px", animation: "fadeIn 0.5s ease-out",
+      }}>
+        <Card style={{ maxWidth: 440, width: "100%", textAlign: "center", padding: "48px 40px" }}>
+          <div style={{ marginBottom: 24 }}>
+            <Mascot state="happy" size={120} accent="var(--accent)" />
+          </div>
+          <div style={{
+            fontSize: 14, fontWeight: 700, textTransform: "uppercase",
+            letterSpacing: "0.12em", color: "var(--accent-ink)", marginBottom: 10,
+          }}>
+            {greeting}
+          </div>
+          <h1 style={{
+            fontFamily: "var(--font-display)",
+            fontWeight: 800, fontSize: 36, lineHeight: 1.1,
+            letterSpacing: "-0.02em", margin: "0 0 28px",
+            color: "var(--ink)",
+            fontVariationSettings: "'opsz' 144, 'SOFT' 100",
+          }}>
+            What's your name?
+          </h1>
+          <input
+            type="text"
+            value={nameInput}
+            onChange={(e) => setNameInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && nameInput.trim() && onSetName(nameInput.trim())}
+            placeholder="Type your name…"
+            autoFocus
+            style={{
+              width: "100%", boxSizing: "border-box",
+              padding: "14px 18px", fontSize: 20, fontWeight: 700,
+              fontFamily: "var(--font-ui)",
+              border: "2px solid var(--line-strong)", borderRadius: 14,
+              background: "var(--bg)", color: "var(--ink)",
+              outline: "none", marginBottom: 20, textAlign: "center",
+              transition: "border-color 0.15s",
+            }}
+            onFocus={(e) => { e.target.style.borderColor = "var(--accent)"; }}
+            onBlur={(e) => { e.target.style.borderColor = "var(--line-strong)"; }}
+          />
+          <ChunkyButton
+            onClick={() => nameInput.trim() && onSetName(nameInput.trim())}
+            disabled={!nameInput.trim()}
+            style={{ width: "100%", justifyContent: "center" }}
+          >
+            Let's go!
+          </ChunkyButton>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div style={{
