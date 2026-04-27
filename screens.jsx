@@ -97,7 +97,7 @@ const Star = ({ filled, size = 28, delay = 0 }) => (
 
 // ---- Start screen ----
 
-const StartScreen = ({ childName, onSetName, onStart, weeks, session, wordCounts = {} }) => {
+const StartScreen = ({ childName, onSetName, onStart, weeks, session, wordCounts = {}, dataSource, liveWeek }) => {
   const [selectedWeek, setSelectedWeek] = useState("latest");
   const [nameInput, setNameInput] = useState("");
   const greeting = useMemo(() => {
@@ -107,11 +107,14 @@ const StartScreen = ({ childName, onSetName, onStart, weeks, session, wordCounts
     return "Good evening";
   }, []);
 
+  const effectiveWeek = dataSource === "live" ? (liveWeek || "latest") : selectedWeek;
+
   const displayCount = useMemo(() => {
+    if (dataSource === "live") return null;
     const key = selectedWeek === "latest" ? String(Math.max(...weeks, 0)) : selectedWeek;
     const poolSize = wordCounts[key] || session;
     return Math.min(session, poolSize);
-  }, [selectedWeek, weeks, wordCounts, session]);
+  }, [dataSource, selectedWeek, weeks, wordCounts, session]);
 
   if (!childName) {
     return (
@@ -204,34 +207,55 @@ const StartScreen = ({ childName, onSetName, onStart, weeks, session, wordCounts
           </p>
 
           <div style={{ marginBottom: 32 }}>
-            <div style={{
-              fontSize: 14, fontWeight: 800, textTransform: "uppercase",
-              letterSpacing: "0.14em", color: "var(--ink-faint)",
-              marginBottom: 14,
-            }}>
-              Pick a week
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-              <WeekChip
-                label="This week"
-                sub="latest"
-                active={selectedWeek === "latest"}
-                onClick={() => setSelectedWeek("latest")}
-              />
-              {weeks.map((w) => (
-                <WeekChip
-                  key={w}
-                  label={`Week ${w}`}
-                  sub={null}
-                  active={selectedWeek === String(w)}
-                  onClick={() => setSelectedWeek(String(w))}
-                />
-              ))}
-            </div>
+            {dataSource === "live" ? (
+              <>
+                <div style={{
+                  fontSize: 14, fontWeight: 800, textTransform: "uppercase",
+                  letterSpacing: "0.14em", color: "var(--ink-faint)",
+                  marginBottom: 10,
+                }}>
+                  Week
+                </div>
+                <div style={{ fontSize: 17, fontWeight: 700, color: "var(--ink)" }}>
+                  {effectiveWeek === "latest" ? "This week" : `Week ${effectiveWeek}`}
+                  <span style={{
+                    marginLeft: 10, fontSize: 13, fontWeight: 600,
+                    color: "var(--ink-faint)",
+                  }}>— change in ⚙ settings</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{
+                  fontSize: 14, fontWeight: 800, textTransform: "uppercase",
+                  letterSpacing: "0.14em", color: "var(--ink-faint)",
+                  marginBottom: 14,
+                }}>
+                  Pick a week
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                  <WeekChip
+                    label="This week"
+                    sub="latest"
+                    active={selectedWeek === "latest"}
+                    onClick={() => setSelectedWeek("latest")}
+                  />
+                  {weeks.map((w) => (
+                    <WeekChip
+                      key={w}
+                      label={`Week ${w}`}
+                      sub={null}
+                      active={selectedWeek === String(w)}
+                      onClick={() => setSelectedWeek(String(w))}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
-          <ChunkyButton onClick={() => onStart(selectedWeek)} icon="▶">
-            Start practice · {displayCount} words
+          <ChunkyButton onClick={() => onStart(effectiveWeek)} icon="▶">
+            {displayCount !== null ? `Start practice · ${displayCount} words` : "Start practice"}
           </ChunkyButton>
         </div>
 
@@ -709,7 +733,7 @@ const SummaryScreen = ({ score, total, history, onReplay, onHome, childName, rew
             fontVariationSettings: "'opsz' 144",
           }}>Word Finder Fun</h3>
           <div style={{ color: "var(--ink-soft)", marginBottom: 16, fontSize: 15 }}>
-            Perfect score! Make as many words as you can from the letters.
+            Make as many words as you can from your spelling words.
           </div>
           <ChunkyButton onClick={onPlayReward} icon="▶">Play now</ChunkyButton>
         </div>

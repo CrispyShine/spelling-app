@@ -10,7 +10,8 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "mascotOn": true,
   "soundOn": true,
   "sessionLength": 12,
-  "dataSource": "mock"
+  "dataSource": "mock",
+  "liveWeek": "latest"
 }/*EDITMODE-END*/;
 
 function shuffle(arr) {
@@ -114,9 +115,9 @@ function App() {
     const resolvedWeek = week === "latest" ? String(Math.max(...availableWeeks)) : String(week);
 
     if (tweaks.dataSource === "live") {
-      const liveWeek = week === "latest" ? "latest" : resolvedWeek;
+      const weekParam = week === "latest" ? "latest" : resolvedWeek;
       try {
-        const r = await fetch(`${LIVE_WEBHOOK}?week=${liveWeek}`);
+        const r = await fetch(`${LIVE_WEBHOOK}?week=${weekParam}`);
         const data = await r.json();
         pool = data.words || [];
       } catch (e) {
@@ -186,12 +187,7 @@ function App() {
 
   function nextWord() {
     if (wordIndex + 1 >= words.length) {
-      // Compute perfect: every history entry correct AND firstTry
-      const allHistory = [...history];
-      // Note: the current word's entry is already in history by now
-      const perfect = allHistory.length === words.length
-        && allHistory.every(h => h.correct && h.firstTry);
-      setRewardUnlocked(perfect);
+      setRewardUnlocked(true);
       setScreen("summary");
       return;
     }
@@ -219,6 +215,8 @@ function App() {
           session={tweaks.sessionLength}
           wordCounts={weekWordCounts}
           onStart={startSession}
+          dataSource={tweaks.dataSource}
+          liveWeek={tweaks.liveWeek}
         />
       )}
 
@@ -330,6 +328,17 @@ function App() {
               { value: "live", label: "Live" },
             ]}
           />
+          {tweaks.dataSource === "live" && (
+            <window.TweakRadio
+              label="Week"
+              value={tweaks.liveWeek}
+              onChange={(v) => setTweak("liveWeek", v)}
+              options={[
+                { value: "latest", label: "Latest" },
+                ...availableWeeks.map(w => ({ value: String(w), label: `Week ${w}` })),
+              ]}
+            />
+          )}
         </window.TweakSection>
       </window.TweaksPanel>
     </>
