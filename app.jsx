@@ -114,8 +114,9 @@ function App() {
     const resolvedWeek = week === "latest" ? String(Math.max(...availableWeeks)) : String(week);
 
     if (tweaks.dataSource === "live") {
+      const liveWeek = week === "latest" ? "latest" : resolvedWeek;
       try {
-        const r = await fetch(`${LIVE_WEBHOOK}?week=${resolvedWeek}`);
+        const r = await fetch(`${LIVE_WEBHOOK}?week=${liveWeek}`);
         const data = await r.json();
         pool = data.words || [];
       } catch (e) {
